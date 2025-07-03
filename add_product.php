@@ -8,32 +8,9 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'admin') {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name = $_POST['name'];
-    $type = $_POST['type'];
-    $price = $_POST['price'];
-    $description = $_POST['description'];
-    $imageName = null;
-
-    // Handle image upload if exists
-    if (!empty($_FILES["image"]["name"])) {
-        $targetDir = "../uploads/";
-        $imageName = time() . "_" . basename($_FILES["image"]["name"]);
-        $targetFile = $targetDir . $imageName;
-        $imageFileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
-        $check = getimagesize($_FILES["image"]["tmp_name"]);
-
-        if ($check !== false) {
-            move_uploaded_file($_FILES["image"]["tmp_name"], $targetFile);
-        } else {
-            $imageName = null; // If not valid image
-        }
-    }
-
-    // Insert into DB
     $stmt = $conn->prepare("INSERT INTO chocolates (name, type, price, description, image) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("ssdss", $name, $type, $price, $description, $imageName);
+    $stmt->bind_param("ssdss", $_POST['name'], $_POST['type'], $_POST['price'], $_POST['description'], $_POST['image']);
     $stmt->execute();
-
     header('Location: admin_dashboard.php');
     exit;
 }
@@ -43,103 +20,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html>
 <head>
   <title>Add Chocolate</title>
-  <link rel="stylesheet" href="../style.css" /> <!-- Optional external CSS -->
   <style>
-    body {
-      font-family: Arial;
-      background: linear-gradient(to bottom right, #ffe6f0, #ccffff);
-      background-attachment: fixed;
-      padding: 50px 20px;
-      margin: 0;
-    }
-
-    .form-container {
-      max-width: 500px;
-      margin: auto;
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.1);
-    }
-
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    label {
-      font-weight: bold;
-      display: block;
-      margin-top: 15px;
-      text-align: left;
-    }
-
-    input[type="text"],
-    input[type="number"],
-    textarea,
-    input[type="file"] {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-
-    button {
-      padding: 12px;
-      width: 48%;
-      border: none;
-      border-radius: 6px;
-      margin-top: 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    .submit-btn {
-      background-color: #28a745;
-      color: white;
-    }
-
-    .cancel-btn {
-      background-color: #6c757d;
-      color: white;
-    }
-
-    .btn-group {
-      display: flex;
-      justify-content: space-between;
-    }
-
-    a {
-      text-decoration: none;
-    }
+body {
+  font-family: Arial;
+  background-image: url('https://mochimochiland.com/wp-content/uploads/sugar_hor.gif');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  padding-top: 60px;
+  text-align: center;
+  margin: 0;}
+    form { 
+	background: white; 
+	padding: 30px; 
+	width: 400px; 
+	margin: auto; 
+	border-radius: 10px; 
+	box-shadow: 0 0 8px rgba(0,0,0,0.1); }
+	
+    input, textarea, button { 
+	width: 90%; 
+	padding: 10px; margin: 10px 0; 
+	border-radius: 5px; 
+	border: 1px solid #ccc; }
+	
+    button { 
+	background-color: #28a745; 
+	color: white; 
+	border: none; }
+	
+    button:hover { background-color: #218838; }
   </style>
 </head>
 <body>
-  <div class="form-container">
-    <form method="post" enctype="multipart/form-data">
-      <h2>🍫 Add New Chocolate</h2>
-
-      <label for="name">Chocolate Name:</label>
-      <input type="text" id="name" name="name" required>
-
-      <label for="type">Type:</label>
-      <input type="text" id="type" name="type" placeholder="e.g. Milk, Dark">
-
-      <label for="price">Price (RM):</label>
-      <input type="number" id="price" name="price" step="0.01">
-
-      <label for="description">Description:</label>
-      <textarea id="description" name="description" rows="3"></textarea>
-
-      <label for="image">Upload Image (optional):</label>
-      <input type="file" id="image" name="image" accept="image/*">
-
-      <div class="btn-group">
-        <button type="submit" class="submit-btn">Add Chocolate</button>
-        <a href="admin_dashboard.php"><button type="button" class="cancel-btn">Cancel</button></a>
-      </div>
-    </form>
-  </div>
+  <form method="post">
+    <h2>➕ Add New Chocolate</h2>
+    <input type="text" name="name" placeholder="Chocolate Name" required><br>
+    <input type="text" name="type" placeholder="Type (e.g. Dark, Milk)"><br>
+    <input type="number" step="0.01" name="price" placeholder="Price (RM)"><br>
+    <textarea name="description" placeholder="Description" rows="3"></textarea><br>
+    <input type="text" name="image" placeholder="Image filename (optional)"><br>
+    <button type="submit">Add Chocolate</button><br>
+    <a href="admin_dashboard.php">⬅️ Back to Dashboard</a>
+  </form>
 </body>
 </html>
